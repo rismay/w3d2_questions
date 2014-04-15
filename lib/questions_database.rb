@@ -1,5 +1,6 @@
 require 'sqlite3'
 require 'singleton'
+require_relative 'question'
 
 class QuestionsDatabase < SQLite3::Database
   include Singleton
@@ -84,124 +85,6 @@ class User < DatabaseObject
 end
 
 
-class Question < DatabaseObject
-  attr_accessor :title, :body, :author_id, :author, :replies
-
-  def self.find_by_id( q_id )
-    question_data = QuestionsDatabase.instance.get_first_row(<<-SQL, :q_id => q_id)
-    SELECT
-    *
-    FROM
-    questions
-    WHERE
-    :q_id = id
-    SQL
-
-    Question.new(question_data)
-  end
-
-  def self.find_by_author_id( auth_id )
-    author_data = QuestionsDatabase.instance.execute(<<-SQL, :auth_id => auth_id)
-    SELECT
-      *
-    FROM
-      questions
-    WHERE
-      author_id = :auth_id
-    SQL
-
-    author_data.map { |question| Question.new(question) }
-  end
-
-  def author
-    @author ||= User.find_by_id(self.author_id)
-  end
-
-  def replies
-    Reply.find_by_question_id(self.id)
-  end
-
-  def followers
-    QuestionFollower.followers_for_question_id(self.id)
-  end
-
-  def initialize( options = {} )
-    @id, @title, @body, @author_id =
-      options.values_at("id", "title", "body", "author_id")
-  end
-
-end
-
-class QuestionFollower < DatabaseObject
-  attr_accessor :question_id, :user_id
-
-  def self.find_by_id( qf_id )
-    follower_data = QuestionsDatabase.instance.get_first_row(<<-SQL, :qf_id => qf_id)
-    SELECT
-    *
-    FROM
-    question_followers
-    WHERE
-    :qf_id = id
-    SQL
-
-    QuestionFollower.new(follower_data)
-  end
-
-  def self.followers_for_question_id( q_id )
-    followers_data = QuestionsDatabase.instance.execute(<<-SQL, :q_id => q_id)
-    SELECT
-      users.*
-    FROM
-      question_followers JOIN users
-      ON users.id = user_id
-    WHERE
-      question_id = :q_id
-    SQL
-
-    followers_data.map { |user| User.new(user) }
-
-  end
-
-  def self.followed_questions_for_user_id( user_id )
-    followed_questions_data = QuestionsDatabase.instance.execute(<<-SQL, :user_id => user_id)
-    SELECT
-      questions.*
-    FROM
-      questions JOIN question_followers
-      ON questions.id = question_id
-    WHERE
-      :user_id = question_followers.user_id
-    SQL
-
-    followed_questions_data.map { |question| Question.new(question) }
-
-  end
-
-  def self.most_followed_questions(n)
-    followed_questions_data = QuestionsDatabase.instance.execute(<<-SQL, :num_questions => n)
-    SELECT
-    questions.*
-    FROM
-      question_followers JOIN questions
-      ON question_id = questions.id
-    GROUP BY question_id
-    ORDER BY COUNT(user_id) DESC
-    LIMIT :num_questions
-    SQL
-
-    followed_questions_data.map { |question| Question.new(question) }
-
-  end
-
-
-  def initialize( options = {} )
-    @id, @question_id, @user_id = options.values_at("id", "question_id", "user_id")
-  end
-
-end
-
-
 class Reply < DatabaseObject
 
   attr_accessor :question_id, :parent_id, :author_id, :author
@@ -274,28 +157,6 @@ class Reply < DatabaseObject
     @id, @question_id, @parent_id, @author_id = options.values_at(
       "id", "question_id", "parent_id", "author_id"
     )
-  end
-
-end
-
-class Like < DatabaseObject
-  attr_accessor :user_id, :question_id
-
-  def self.find_by_id( like_id )
-    like_data = QuestionsDatabase.instance.get_first_row(<<-SQL, :like_id => like_id)
-    SELECT
-      *
-    FROM
-      question_likes
-    WHERE
-      id = :like_id
-    SQL
-
-    Like.new(like_data)
-  end
-
-  def initialize( options = {} )
-    @id, @user_id, @question_id = options.values_at( "id", "user_id", "question_id" )
   end
 
 end
