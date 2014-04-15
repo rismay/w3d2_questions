@@ -12,9 +12,21 @@ describe Question do
       Question.should respond_to (:find_by_id)
     end
 
-    it 'returns a Question object' do
-      return_object = Question.find_by_id(1)
-      expect(return_object.is_a?Question).to eq(true)
+    context 'Introspects' do
+      let(:test_question) { Question.find_by_id(1) }
+
+      it 'returns a Question object' do
+        expect(test_question.is_a?Question).to eq(true)
+      end
+
+      it 'returns a Question object' do
+        expect(test_question.id).to eq(1)
+      end
+
+      it 'knows who follows it' do
+        follower = User.find_by_id(2)
+        expect(test_question.followers[0]).to eq(follower)
+      end
     end
   end
 
@@ -29,6 +41,52 @@ describe QuestionFollower do
     return_object = QuestionFollower.find_by_id(1)
     expect(return_object.is_a?QuestionFollower).to eq(true)
   end
+
+  context '#followers_for_question_id' do
+    let(:returned_arr) { QuestionFollower.followers_for_question_id( 1 ) }
+    it 'responds to #followers_for_question_id' do
+      QuestionFollower.should respond_to(:followers_for_question_id)
+    end
+
+    it 'returns an array of Users' do
+      expect(returned_arr).to be_a(Array)
+    end
+
+    it 'returns the appropriate number of Questions' do
+      expect(returned_arr.count).to eq(1)
+    end
+  end
+
+  context '#followed_questions_for_user_id' do
+    let(:returned_arr) { QuestionFollower.followed_questions_for_user_id( 1 ) }
+
+    it 'responds to #followed_questions_for_user_id' do
+      QuestionFollower.should respond_to(:followed_questions_for_user_id)
+    end
+
+    it 'returns an array of Questions' do
+      expect(returned_arr).to be_a(Array)
+    end
+
+    it 'returns the appropriate number of Questions' do
+      expect(returned_arr.count).to eq(1)
+    end
+  end
+
+  context '::most_followed_questions' do
+    let(:returned_arr) { QuestionFollower.most_followed_questions( 1 ) }
+
+    it 'fetches the n most followed questions' do
+      expect(returned_arr.count).to eq(1)
+      p returned_arr
+    end
+
+    it 'resulted in a Question object' do
+      expect(returned_arr.first).to be_a(Question)
+    end
+
+  end
+
 end
 
 describe User do
@@ -39,6 +97,11 @@ describe User do
   it 'returns a User object' do
     return_object = User.find_by_id(1)
     expect(return_object.is_a?User).to eq(true)
+  end
+
+  it 'returns the corrent User' do
+    return_object = User.find_by_id(1)
+    expect(return_object.id).to eq(1)
   end
 
   context 'Can find interesting stuff about himself' do
