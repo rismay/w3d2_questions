@@ -1,7 +1,9 @@
 require 'rspec'
 require_relative '../lib/question'
+require_relative '../lib/user'
 require_relative '../lib/question_follower'
 require_relative '../lib/questions_database'
+require_relative '../lib/question_like'
 
 
 describe QuestionsDatabase do
@@ -29,6 +31,13 @@ describe Question do
       it 'knows who follows it' do
         follower = User.find_by_id(2)
         expect(test_question.followers[0]).to eq(follower)
+      end
+
+    end
+
+    context 'Most Liked questions' do
+      it 'returns a cool question' do
+        expect(Question.most_liked(1).first.id).to eq(1)
       end
     end
   end
@@ -81,7 +90,6 @@ describe QuestionFollower do
 
     it 'fetches the n most followed questions' do
       expect(returned_arr.count).to eq(1)
-      p returned_arr
     end
 
     it 'resulted in a Question object' do
@@ -118,6 +126,15 @@ describe User do
     it 'responds to #authored_replies' do
       test_user.should respond_to (:authored_replies)
     end
+
+    it 'knows his karma' do
+      test_user.average_karma
+    end
+
+    # it 'knows both users karma' do
+    #   User.find_by_id( 2 ).average_karma
+    # end
+
   end
 end
 
@@ -132,14 +149,54 @@ describe Reply do
   end
 end
 
-describe Like do
+describe QuestionLike do
   it 'responds to #find_by_id' do
-    Like.should respond_to (:find_by_id)
+    QuestionLike.should respond_to (:find_by_id)
   end
 
   it 'returns a Like object' do
-    return_object = Like.find_by_id(1)
-    expect(return_object.is_a?Like).to eq(true)
+    return_object = QuestionLike.find_by_id(1)
+    expect(return_object.is_a?QuestionLike).to eq(true)
   end
+
+  context '#num_likes_for_question_id' do
+
+    it 'responds to #num_likes_for_question_id' do
+      QuestionLike.should respond_to (:num_likes_for_question_id)
+    end
+
+    it 'returns a number' do
+      num_likes = QuestionLike.num_likes_for_question_id( 1 )
+      expect( num_likes ).to be_a Integer
+    end
+  end
+
+
+  context '#likers_for_question_id' do
+    let(:likers) { QuestionLike.likers_for_question_id( 1 ) }
+
+    it 'returns an array' do
+      expect(likers).to be_a(Array)
+    end
+
+    it 'contains QuestionLike objects' do
+      expect(likers.first).to be_a(User)
+    end
+
+  end
+
+  context '#liked_questions_for_user_id(user_id)' do
+    let(:questions) { QuestionLike.liked_questions_for_user(1) }
+
+    it 'returns an array' do
+      expect(questions).to be_a(Array)
+    end
+
+    it 'contains QuestionLike objects' do
+      expect(questions.first).to be_a(Question)
+    end
+
+  end
+
 end
 

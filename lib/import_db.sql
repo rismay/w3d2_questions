@@ -35,6 +35,7 @@ INSERT INTO users (fname, lname) VALUES('ris', 'may'), ('frank', 'kotsianas');
 
 INSERT INTO questions (title, body, author_id) VALUES
   ('When is this over?', 'Really, this is taking a while.', 1),
+  ('Are we there yet?', 'How much longer.', 1),
   ('Five members of the Wu-Tang Clan?', 'For reals: I need this for an interview.', 2)
 ;
 
@@ -51,6 +52,6 @@ INSERT INTO replies (question_id, parent_id, author_id, body) VALUES
 
 INSERT INTO question_likes (user_id, question_id) VALUES
   (1, 1),
-  (1, 2),
+  (1, 3),
   (2, 1)
 ;
