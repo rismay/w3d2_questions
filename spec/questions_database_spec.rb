@@ -1,10 +1,10 @@
 require 'rspec'
-require_relative '../lib/question'
-require_relative '../lib/user'
-require_relative '../lib/question_follower'
-require_relative '../lib/questions_database'
-require_relative '../lib/question_like'
 
+require 'question'
+require 'user'
+require 'question_follower'
+require 'questions_database'
+require 'question_like'
 
 describe QuestionsDatabase do
 

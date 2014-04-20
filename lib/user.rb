@@ -50,7 +50,7 @@ class User < DatabaseObject
       SELECT
         COUNT(ql.id) likes , q.title question
       FROM
-        questions q LEFT OUTER JOIN question_likes ql ON q.id = ql.question_id
+        questions q JOIN question_likes ql ON q.id = ql.question_id
       WHERE
         q.author_id = :user_id
       GROUP BY
